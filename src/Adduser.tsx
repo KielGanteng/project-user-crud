@@ -3,20 +3,19 @@ import { useNavigate } from 'react-router-dom'
 
 // Import separated components and services
 // Import separated components and services
-import type { User } from './Types'
+import type { Events } from './Types'
 import { userApi } from './service/Api'
 import { Button } from './component/Button'
 
 function AddUser() {
   const navigate = useNavigate();
   
-  const [formData, setFormData] = useState<Omit<User, 'id'>>({
-    firstName: '',
-    lastName: '',
-    address: '',
-    identityNumber: 0,
-    birthDate: new Date(),
-    status: true
+  const [formData, setFormData] = useState<Omit<Events, 'id'>>({
+    title: '',
+    description: '',
+    date: '',
+    created_at: new Date(),
+    updated_at: new Date()
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -29,7 +28,6 @@ function AddUser() {
       ...prev,
       [name]: type === 'number' ? Number(value) : 
                type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-               type === 'date' ? new Date(value) :
                value
     }));
 
@@ -45,37 +43,17 @@ function AddUser() {
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+    if (!formData.description.trim()) {
+      newErrors.description = 'Last name is required';
     }
 
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-    }
-
-    if (!formData.identityNumber || formData.identityNumber <= 0) {
-      newErrors.identityNumber = 'Identity number must be a positive number';
-    }
-
-    if (!formData.birthDate) {
-      newErrors.birthDate = 'Birth date is required';
-    } else {
-      const birthDate = new Date(formData.birthDate);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-      
-      if (age < 17) {
-        newErrors.birthDate = 'Minimum age is 17 years';
-      }
-      
-      if (birthDate > today) {
-        newErrors.birthDate = 'Birth date cannot be in the future';
-      }
-    }
+    if (!formData.date) {
+      newErrors.date = 'Date is required';
+    } 
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,12 +86,11 @@ function AddUser() {
 
   const handleReset = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
-      address: '',
-      identityNumber: 0,
-      birthDate: new Date(),
-      status: true
+      title: '',
+      description: '',
+      date: '',
+      created_at: new Date(),
+      updated_at: new Date()
     });
     setErrors({});
   };
@@ -135,132 +112,69 @@ function AddUser() {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* First Name */}
+            {/* Title */}
             <div>
-              <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-900">
-                First Name
+              <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900">
+                Title
               </label>
               <input 
                 type="text" 
-                id="firstName" 
-                name="firstName"
-                value={formData.firstName}
+                id="title" 
+                name="title"
+                value={formData.title}
                 onChange={handleInputChange}
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-300'
+                  errors.title ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Enter first name"
+                placeholder="Enter Title"
                 required 
               />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+              {errors.title && (
+                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
               )}
             </div>
 
-            {/* Last Name */}
+            {/*Description */}
             <div>
-              <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-900">
-                Last Name
+              <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900">
+               Description
               </label>
               <input 
                 type="text" 
-                id="lastName" 
-                name="lastName"
-                value={formData.lastName}
+                id="description" 
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-300'
+                  errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Enter last name"
+                placeholder="EnterDescription"
                 required 
               />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
               )}
             </div>
 
-            {/* Address */}
+            {/* Date */}
             <div>
-              <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900">
-                Address
-              </label>
-              <input 
-                type="text" 
-                id="address" 
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className={`bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
-                  errors.address ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter address"
-                required 
-              />
-              {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-              )}
-            </div>
-
-            {/* Identity Number */}
-            <div>
-              <label htmlFor="identityNumber" className="block mb-2 text-sm font-medium text-gray-900">
-                Identity Number
-              </label>
-              <input 
-                type="number" 
-                id="identityNumber" 
-                name="identityNumber"
-                value={formData.identityNumber || ''}
-                onChange={handleInputChange}
-                className={`bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
-                  errors.identityNumber ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter identity number"
-                min="1"
-                required 
-              />
-              {errors.identityNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.identityNumber}</p>
-              )}
-            </div>
-
-            {/* Birth Date */}
-            <div>
-              <label htmlFor="birthDate" className="block mb-2 text-sm font-medium text-gray-900">
-                Birth Date
+              <label htmlFor="Date" className="block mb-2 text-sm font-medium text-gray-900">
+                Date
               </label>
               <input 
                 type="date" 
-                id="birthDate" 
-                name="birthDate"
-                value={formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : ''}
+                id="date" 
+                name="date"
+                value={formData.date}
                 onChange={handleInputChange}
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
-                  errors.birthDate ? 'border-red-500' : 'border-gray-300'
+                  errors.date ? 'border-red-500' : 'border-gray-300'
                 }`}
-                max={new Date().toISOString().split('T')[0]}
                 required 
               />
-              {errors.birthDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.birthDate}</p>
+              {errors.date && (
+                <p className="mt-1 text-sm text-red-600">{errors.Date}</p>
               )}
-            </div>
-
-            {/* Status */}
-            <div>
-              <label htmlFor="status" className="block mb-2 text-sm font-medium text-gray-900">
-                Status
-              </label>
-              <select 
-                id="status" 
-                name="status"
-                value={formData.status ? 'true' : 'false'}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value === 'true' }))}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
             </div>
 
             {/* Action Buttons */}
