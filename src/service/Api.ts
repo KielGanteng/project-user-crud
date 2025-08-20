@@ -1,36 +1,35 @@
 // src/services/Api.ts
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  identityNumber: number;
-  birthDate: Date;
-  status: boolean;
+export interface Events {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // Fixed API URL - removed duplicate /users
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const userApi = {
-async fetchUsers(): Promise<User[]> {
+async fetchUsers(): Promise<Events[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`);
+    const response = await fetch(`${API_BASE_URL}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
     console.log(data)
-    return data;
+    return data.data || [];
   } catch (error) {
     console.error('Error fetching users:', error);
     throw error;
   }
 },
 
-async deleteUser(userId: string): Promise<void> {
+async deleteUser(userId: number): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/${userId}`, {
       method: 'DELETE'
     });
     if (!response.ok) {
@@ -42,9 +41,9 @@ async deleteUser(userId: string): Promise<void> {
   }
 },
 
-async getUserById(userId: string): Promise<User> {
+async getUserById(userId: number): Promise<Events> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+    const response = await fetch(`${API_BASE_URL}/${userId}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -56,9 +55,9 @@ async getUserById(userId: string): Promise<User> {
   }
 },
 
-async createUser(userData: Omit<User, 'id'>): Promise<User> {
+async createUser(userData: Omit<Events, 'id'>): Promise<Events> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`, {
+    const response = await fetch(`${API_BASE_URL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -69,16 +68,16 @@ async createUser(userData: Omit<User, 'id'>): Promise<User> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    return data;
+    return data.data;
   } catch (error) {
     console.error('Error creating user:', error);
     throw error;
   }
 },
 
-async updateUser(userId: string, userData: Partial<User>): Promise<User> {
+async updateUser(userId: number, userData: Partial<Events>): Promise<Events> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -1,20 +1,19 @@
 import React from 'react';
 import { Button } from './Button'
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  identityNumber: number; // Fixed property name
-  birthDate: Date;
-  status: boolean;
+export interface Events {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 interface UserTableProps {
-  users: User[];
-  onViewDetail: (userId: string) => void;
-  onDeleteUser: (userId: string) => void;
+  users: Events[];
+  onViewDetail: (userId: number) => void;
+  onDeleteUser: (userId: number) => void;
   isLoading: boolean;
 }
 
@@ -30,11 +29,9 @@ const UserTable: React.FC<UserTableProps> = ({
         <div className="table-row-group">
           {/* Header */}
           <div className="table-row bg-gray-600">
-            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Full Name</div>
-            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Address</div>
-            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Identity Number</div>
-            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Birth Date</div>
-            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Status</div>
+            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Title</div>
+            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Description</div>
+            <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Created Date</div>
             <div className="table-cell text-white px-6 py-4 text-lg font-semibold">Actions</div>
           </div>
           
@@ -78,30 +75,24 @@ const EmptyTableRow: React.FC = () => (
 );
 
 interface UserRowProps {
-  user: User;
-  onViewDetail: (userId: string) => void;
-  onDeleteUser: (userId: string) => void;
+  user: Events;
+  onViewDetail: (userId: number) => void;
+  onDeleteUser: (userId: number) => void;
   isLoading: boolean;
 }
 
 const UserRow: React.FC<UserRowProps> = ({ user, onViewDetail, onDeleteUser, isLoading }) => (
   <div className="table-row hover:bg-gray-50 transition-colors">
     <div className="table-cell bg-white text-gray-800 px-6 py-4 text-md border-b font-medium">
-      {user.firstName} {user.lastName}
+      {user.title}
     </div>
     <div className="table-cell bg-white text-gray-700 px-6 py-4 text-md border-b max-w-xs">
-      <div className="truncate" title={user.address}>
-        {user.address}
+      <div className="truncate" title={user.description}>
+        {user.description}
       </div>
     </div>
     <div className="table-cell bg-white text-gray-700 px-6 py-4 text-md border-b">
-      {user.identityNumber}
-    </div>
-    <div className="table-cell bg-white text-gray-700 px-6 py-4 text-md border-b">
-      {user.birthDate ? new Date(user.birthDate).toLocaleDateString('id-ID') : '-'}
-    </div>
-    <div className="table-cell bg-white text-gray-700 px-6 py-4 text-md border-b">
-      <StatusBadge status={user.status} />
+      {user.date}
     </div>
     <div className="table-cell bg-white text-gray-700 px-6 py-4 text-md border-b">
       <div className="flex gap-2">

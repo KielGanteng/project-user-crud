@@ -1,23 +1,22 @@
 import React from 'react';
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  identityNumber: number; // Fixed property name
-  birthDate: Date;
-  status: boolean;
+export interface Events {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 interface UserStatsProps {
-  users: User[];
+  users: Events[];
 }
 
 const UserStats: React.FC<UserStatsProps> = ({ users }) => {
   const totalUsers = users.length;
-  const activeUsers = users.filter(user => user.status).length;
-  const inactiveUsers = users.filter(user => !user.status).length;
+  const activeUsers = users.filter(user => user.title).length;
+  const inactiveUsers = users.filter(user => !user.description).length;
 
   if (totalUsers === 0) {
     return null;
