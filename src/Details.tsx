@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 // Import separated components and services
-import type { User } from './Types'
+import type { Events } from './Types' // ✅ Changed from User to Events
 import { userApi } from './service/Api'
 import { Button } from './component/Button'
 import { LoadingIndicator } from './component/LoadingIndicator'
@@ -10,11 +10,24 @@ import { LoadingIndicator } from './component/LoadingIndicator'
 function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Events | null>(null); // ✅ Changed from User to Events
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<Events>>({}); // ✅ Changed from User to Events
   const [error, setError] = useState<string | null>(null);
+
+  // Helper function to format date for input
+  const formatDateForInput = (dateValue: string | Date | undefined): string => {
+    if (!dateValue) return '';
+    
+    try {
+      const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -23,7 +36,7 @@ function UserDetail() {
       try {
         setLoading(true);
         setError(null);
-        const userData = await userApi.getUserById(id);
+        const userData = await userApi.getUserById(Number(id)); // ✅ Convert string to number
         setUser(userData);
         setFormData(userData);
       } catch (error) {
@@ -37,27 +50,28 @@ function UserDetail() {
     fetchUser();
   }, [id]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-               type === 'number' ? Number(value) : value
+               type === 'number' ? Number(value) : 
+               value // ✅ Don't convert date to Date object, keep as string
     }));
   };
 
   const handleSave = async () => {
-    if (!id) return;
+    if (!id || !user) return;
 
     try {
       setLoading(true);
-      const updatedUser = await userApi.updateUser(id, formData);
+      const updatedUser = await userApi.updateUser(Number(id), formData); // ✅ Convert string to number
       setUser(updatedUser);
       setIsEditing(false);
-      alert('User berhasil diupdate!');
+      alert('Event berhasil diupdate!');
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Terjadi error saat mengupdate user');
+      alert('Terjadi error saat mengupdate event');
     } finally {
       setLoading(false);
     }
@@ -66,15 +80,15 @@ function UserDetail() {
   const handleDelete = async () => {
     if (!id) return;
 
-    if (window.confirm('Apakah Anda yakin ingin menghapus user ini?')) {
+    if (window.confirm('Apakah Anda yakin ingin menghapus event ini?')) {
       try {
         setLoading(true);
-        await userApi.deleteUser(id);
-        alert('User berhasil dihapus!');
+        await userApi.deleteUser(Number(id)); // ✅ Convert string to number
+        alert('Event berhasil dihapus!');
         navigate('/');
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Terjadi error saat menghapus user');
+        alert('Terjadi error saat menghapus event');
       } finally {
         setLoading(false);
       }
@@ -94,7 +108,7 @@ function UserDetail() {
     return (
       <div className="min-h-screen bg-gray-100 p-6">
         <div className="max-w-4xl mx-auto">
-          <LoadingIndicator size="lg" text="Loading user details..." />
+          <LoadingIndicator size="lg" text="Loading event details..." />
         </div>
       </div>
     );
@@ -106,11 +120,11 @@ function UserDetail() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <strong className="font-bold">Error: </strong>
-            <span>{error || 'User tidak ditemukan'}</span>
+            <span>{error || 'Event tidak ditemukan'}</span>
           </div>
           <div className="mt-4">
             <Button variant="primary" onClick={handleGoBack}>
-              Kembali ke Daftar User
+              Kembali ke Daftar Event
             </Button>
           </div>
         </div>
@@ -124,8 +138,8 @@ function UserDetail() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className='font-bold text-3xl text-gray-800'>User Details</h1>
-            <p className='text-gray-600 mt-1'>Manage user information and settings</p>
+            <h1 className='font-bold text-3xl text-gray-800'>Event Details</h1>
+            <p className='text-gray-600 mt-1'>Manage event information and settings</p>
           </div>
           <div className="flex gap-3">
             <Button variant="primary" onClick={handleGoBack}>
@@ -133,7 +147,7 @@ function UserDetail() {
             </Button>
             {!isEditing ? (
               <Button variant="success" onClick={() => setIsEditing(true)}>
-                Edit User
+                Edit Event
               </Button>
             ) : (
               <Button variant="danger" onClick={handleCancel}>
@@ -146,16 +160,16 @@ function UserDetail() {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <form className="space-y-6">
-            {/* First Name */}
+            {/* Title */}
             <div>
-              <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-900">
-                First Name
+              <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900">
+                Event Title
               </label>
               <input 
                 type="text" 
-                id="firstName" 
-                name="firstName"
-                value={formData.firstName || ''}
+                id="title" 
+                name="title"
+                value={formData.title || ''}
                 onChange={handleInputChange}
                 disabled={!isEditing}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
@@ -163,67 +177,33 @@ function UserDetail() {
               />
             </div>
 
-            {/* Last Name */}
+            {/* Description */}
             <div>
-              <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-900">
-                Last Name
+              <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900">
+                Description
               </label>
-              <input 
-                type="text" 
-                id="lastName" 
-                name="lastName"
-                value={formData.lastName || ''}
+              <textarea 
+                id="description" 
+                name="description"
+                value={formData.description || ''}
                 onChange={handleInputChange}
                 disabled={!isEditing}
+                rows={4}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
                 required 
               />
             </div>
 
-            {/* Address */}
+            {/* Date */}
             <div>
-              <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900">
-                Address
-              </label>
-              <input 
-                type="text" 
-                id="address" 
-                name="address"
-                value={formData.address || ''}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
-                required 
-              />
-            </div>
-
-            {/* Identity Number */}
-            <div>
-              <label htmlFor="identityNumber" className="block mb-2 text-sm font-medium text-gray-900">
-                Identity Number
-              </label>
-              <input 
-                type="number" 
-                id="identityNumber" 
-                name="identityNumber"
-                value={formData.identityNumber || ''}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
-                required 
-              />
-            </div>
-
-            {/* Birth Date */}
-            <div>
-              <label htmlFor="birthDate" className="block mb-2 text-sm font-medium text-gray-900">
-                Birth Date
+              <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900">
+                Event Date
               </label>
               <input 
                 type="date" 
-                id="birthDate" 
-                name="birthDate"
-                value={formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : ''}
+                id="date" 
+                name="date"
+                value={formatDateForInput(formData.date)} // ✅ Use helper function
                 onChange={handleInputChange}
                 disabled={!isEditing}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
@@ -231,24 +211,35 @@ function UserDetail() {
               />
             </div>
 
-            {/* Status */}
+            {/* Created At (Read-only) */}
             <div>
-              <label htmlFor="status" className="block mb-2 text-sm font-medium text-gray-900">
-                Status
+              <label htmlFor="created_at" className="block mb-2 text-sm font-medium text-gray-900">
+                Created At
               </label>
-              <select 
-                id="status" 
-                name="status"
-                value={formData.status ? 'true' : 'false'}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value === 'true' }))}
-                disabled={!isEditing}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+              <input 
+                type="text" 
+                id="created_at"
+                value={user.created_at ? new Date(user.created_at).toLocaleString() : ''}
+                disabled
+                className="bg-gray-200 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" 
+              />
             </div>
 
+            {/* Updated At (Read-only) */}
+            <div>
+              <label htmlFor="updated_at" className="block mb-2 text-sm font-medium text-gray-900">
+                Last Updated
+              </label>
+              <input 
+                type="text" 
+                id="updated_at"
+                value={user.updated_at ? new Date(user.updated_at).toLocaleString() : ''}
+                disabled
+                className="bg-gray-200 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" 
+              />
+            </div>
+
+            
             {/* Action Buttons */}
             {isEditing && (
               <div className="flex gap-4 pt-6 border-t">
@@ -267,7 +258,7 @@ function UserDetail() {
                   onClick={handleDelete}
                   disabled={loading}
                 >
-                  Delete User
+                  {loading ? 'Deleting...' : 'Delete Event'}
                 </Button>
               </div>
             )}

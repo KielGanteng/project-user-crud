@@ -5,7 +5,7 @@ import './index.css'
 
 // Import separated components and services
 // Import separated components and services
-import type { User } from './Types'
+import type { Events } from './Types'
 import { userApi } from './service/Api'
 import { Button } from './component/Button'
 import { LoadingIndicator } from './component/LoadingIndicator'
@@ -13,7 +13,7 @@ import UserTable from './component/UserTable'
 import UserStats from './component/User'
 
 function App() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<Events[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -40,11 +40,11 @@ function App() {
     navigate('/add-user');
   };
 
-  const handleViewDetail = (userId: string) => {
+  const handleViewDetail = (userId: number) => {
     navigate(`/user/${userId}`);
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: number) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus user ini?')) {
       try {
         setIsLoading(true);
