@@ -1,5 +1,5 @@
 import React from 'react';
-
+// This file defines a Button component with customizable styles and behavior
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'success' | 'danger';
   size?: 'sm' | 'md' | 'lg';
