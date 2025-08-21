@@ -1,6 +1,6 @@
 // src/services/Api.ts
 
-// Perbaikan: import tipe data yang diperlukan
+// Perbaikan API untuk mengambil data pengguna dengan benar
 import type { Events } from '../Types';
 
 // Fixed API URL - removed duplicate /users

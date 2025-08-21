@@ -1,5 +1,5 @@
 import React from 'react';
-// This file defines a LoadingIndicator component that displays a loading spinner with optional text
+// This file defines a LoadingIndicator component that displays a loading spinner with customizable size, color, and text
 interface LoadingIndicatorProps {
   size?: 'sm' | 'md' | 'lg';
   color?: string;

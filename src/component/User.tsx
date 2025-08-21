@@ -1,5 +1,5 @@
 import React from 'react';
-// This file defines a UserStats component that displays user statistics
+// This file defines a UserStats component that displays user statistics such as total users, active users, and inactive users
 export interface Events {
   id: number;
   title: string;

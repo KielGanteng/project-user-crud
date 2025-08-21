@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from './Button'
-
+// This file defines a UserTable component that displays a list of users in a table format with actions for viewing details and deleting users
 export interface Events {
   id: number;
   title: string;
