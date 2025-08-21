@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import './App.css'
 import './index.css'
 
-// Import separated components and services
-// Import separated components and services
+// Import components and services
 import type { Events } from './Types'
 import { userApi } from './service/Api'
 import { Button } from './component/Button'
@@ -40,8 +39,14 @@ function App() {
     navigate('/add-user');
   };
 
-  const handleViewDetail = (userId: number) => {
-    navigate(`/user/${userId}`);
+  // ✅ Fungsi handleViewDetail sekarang menerima parameter `isEditing`
+  const handleViewDetail = (userId: number, isEditing = false) => {
+    if (isEditing) {
+      // Navigasi dengan state untuk langsung masuk mode edit
+      navigate(`/user/${userId}`, { state: { isEditing: true } });
+    } else {
+      navigate(`/user/${userId}`);
+    }
   };
 
   const handleDeleteUser = async (userId: number) => {
