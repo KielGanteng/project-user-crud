@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 
-// Import separated components and services
-import type { Events } from './Types' // ✅ Changed from User to Events
+// Import components and services
+import type { Events } from './Types'
 import { userApi } from './service/Api'
 import { Button } from './component/Button'
 import { LoadingIndicator } from './component/LoadingIndicator'
@@ -10,10 +10,11 @@ import { LoadingIndicator } from './component/LoadingIndicator'
 function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<Events | null>(null); // ✅ Changed from User to Events
+  const location = useLocation(); // ✅ Tambahkan ini
+  const [user, setUser] = useState<Events | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<Events>>({}); // ✅ Changed from User to Events
+  const [isEditing, setIsEditing] = useState(false); // ✅ Ubah default menjadi false
+  const [formData, setFormData] = useState<Partial<Events>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Helper function to format date for input
@@ -36,9 +37,16 @@ function UserDetail() {
       try {
         setLoading(true);
         setError(null);
-        const userData = await userApi.getUserById(Number(id)); // ✅ Convert string to number
+        const userData = await userApi.getUserById(Number(id));
         setUser(userData);
-        setFormData(userData);
+        setFormData(userData); // ✅ Mengisi form data dengan data yang diambil
+        
+        // ✅ Cek state navigasi untuk mengatur mode edit
+        if (location.state && location.state.isEditing) {
+          setIsEditing(true);
+        } else {
+          setIsEditing(false); // Pastikan false jika tidak ada state
+        }
       } catch (error) {
         console.error('Error fetching user:', error);
         setError('Failed to load user details');
@@ -48,15 +56,15 @@ function UserDetail() {
     };
 
     fetchUser();
-  }, [id]);
+  }, [id, location.state]); // ✅ Tambahkan `id` dan `location.state` sebagai dependency
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-               type === 'number' ? Number(value) : 
-               value // ✅ Don't convert date to Date object, keep as string
+                type === 'number' ? Number(value) : 
+                value
     }));
   };
 
@@ -65,13 +73,14 @@ function UserDetail() {
 
     try {
       setLoading(true);
-      const updatedUser = await userApi.updateUser(Number(id), formData); // ✅ Convert string to number
+      const updatedUser = await userApi.updateUser(Number(id), formData);
       setUser(updatedUser);
-      setIsEditing(false);
-      alert('Event berhasil diupdate!');
+      setFormData(updatedUser); // Update form data dengan data yang baru disimpan
+      setIsEditing(false); // Keluar dari mode edit setelah berhasil
+      alert('User berhasil diupdate!');
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Terjadi error saat mengupdate event');
+      alert('Terjadi error saat mengupdate User');
     } finally {
       setLoading(false);
     }
@@ -80,15 +89,15 @@ function UserDetail() {
   const handleDelete = async () => {
     if (!id) return;
 
-    if (window.confirm('Apakah Anda yakin ingin menghapus event ini?')) {
+    if (window.confirm('Apakah Anda yakin ingin menghapus User ini?')) {
       try {
         setLoading(true);
-        await userApi.deleteUser(Number(id)); // ✅ Convert string to number
-        alert('Event berhasil dihapus!');
+        await userApi.deleteUser(Number(id));
+        alert('User berhasil dihapus!');
         navigate('/');
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Terjadi error saat menghapus event');
+        alert('Terjadi error saat menghapus User');
       } finally {
         setLoading(false);
       }
@@ -100,15 +109,19 @@ function UserDetail() {
   };
 
   const handleCancel = () => {
-    setFormData(user || {});
-    setIsEditing(false);
+    setFormData(user || {}); // Mengembalikan data form ke data asli
+    setIsEditing(false); // Keluar dari mode edit
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true); // Masuk ke mode edit
   };
 
   if (loading && !user) {
     return (
       <div className="min-h-screen bg-gray-100 p-6">
         <div className="max-w-4xl mx-auto">
-          <LoadingIndicator size="lg" text="Loading event details..." />
+          <LoadingIndicator size="lg" text="Loading User details..." />
         </div>
       </div>
     );
@@ -120,11 +133,11 @@ function UserDetail() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <strong className="font-bold">Error: </strong>
-            <span>{error || 'Event tidak ditemukan'}</span>
+            <span>{error || 'User tidak ditemukan'}</span>
           </div>
           <div className="mt-4">
             <Button variant="primary" onClick={handleGoBack}>
-              Kembali ke Daftar Event
+              Kembali ke Daftar User
             </Button>
           </div>
         </div>
@@ -138,16 +151,20 @@ function UserDetail() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className='font-bold text-3xl text-gray-800'>Event Details</h1>
-            <p className='text-gray-600 mt-1'>Manage event information and settings</p>
+            <h1 className='font-bold text-3xl text-gray-800'>
+              {isEditing ? 'Edit User' : 'User Detail'}
+            </h1>
+            <p className='text-gray-600 mt-1'>
+              {isEditing ? 'Modify user information' : 'View user information'}
+            </p>
           </div>
           <div className="flex gap-3">
             <Button variant="primary" onClick={handleGoBack}>
               ← Kembali
             </Button>
             {!isEditing ? (
-              <Button variant="success" onClick={() => setIsEditing(true)}>
-                Edit Event
+              <Button variant="success" onClick={handleEdit}>
+                Edit User
               </Button>
             ) : (
               <Button variant="danger" onClick={handleCancel}>
@@ -163,7 +180,7 @@ function UserDetail() {
             {/* Title */}
             <div>
               <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900">
-                Event Title
+                Name User
               </label>
               <input 
                 type="text" 
@@ -180,7 +197,7 @@ function UserDetail() {
             {/* Description */}
             <div>
               <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900">
-                Description
+                Description User
               </label>
               <textarea 
                 id="description" 
@@ -197,13 +214,13 @@ function UserDetail() {
             {/* Date */}
             <div>
               <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900">
-                Event Date
+                Date User
               </label>
               <input 
                 type="date" 
                 id="date" 
                 name="date"
-                value={formatDateForInput(formData.date)} // ✅ Use helper function
+                value={formatDateForInput(formData.date)}
                 onChange={handleInputChange}
                 disabled={!isEditing}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:bg-gray-200 disabled:cursor-not-allowed" 
@@ -211,36 +228,7 @@ function UserDetail() {
               />
             </div>
 
-            {/* Created At (Read-only) */}
-            <div>
-              <label htmlFor="created_at" className="block mb-2 text-sm font-medium text-gray-900">
-                Created At
-              </label>
-              <input 
-                type="text" 
-                id="created_at"
-                value={user.created_at ? new Date(user.created_at).toLocaleString() : ''}
-                disabled
-                className="bg-gray-200 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" 
-              />
-            </div>
-
-            {/* Updated At (Read-only) */}
-            <div>
-              <label htmlFor="updated_at" className="block mb-2 text-sm font-medium text-gray-900">
-                Last Updated
-              </label>
-              <input 
-                type="text" 
-                id="updated_at"
-                value={user.updated_at ? new Date(user.updated_at).toLocaleString() : ''}
-                disabled
-                className="bg-gray-200 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" 
-              />
-            </div>
-
-            
-            {/* Action Buttons */}
+            {/* Action Buttons - Only show when editing */}
             {isEditing && (
               <div className="flex gap-4 pt-6 border-t">
                 <Button 
@@ -258,7 +246,7 @@ function UserDetail() {
                   onClick={handleDelete}
                   disabled={loading}
                 >
-                  {loading ? 'Deleting...' : 'Delete Event'}
+                  {loading ? 'Deleting...' : 'Delete User'}
                 </Button>
               </div>
             )}
